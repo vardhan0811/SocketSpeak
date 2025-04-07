@@ -1,10 +1,16 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+watchPaths = ["."]
+buildCommand = "npm install"
 
 [deploy]
 startCommand = "npm start"
 healthcheckPath = "/"
-healthcheckTimeout = 100
+healthcheckTimeout = 200
 restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10 
+restartPolicyMaxRetries = 10
+numReplicas = 1
+
+[deploy.env]
+NODE_TLS_REJECT_UNAUTHORIZED = "0" 
