@@ -208,6 +208,24 @@ const ChatContainer = () => {
                 ? "bg-gradient-to-r from-purple-500/20 to-blue-500/20 backdrop-blur-sm border border-white/5" 
                 : "bg-white/5 backdrop-blur-sm border border-white/5"
             }`}>
+              {/* Delete button - only show for user's own messages */}
+              {message.senderId === authUser._id && (
+                <button
+                  onClick={() => handleDeleteMessage(message._id)}
+                  disabled={deletingMessageId === message._id}
+                  className="absolute -top-2 -right-2 p-1.5 rounded-full bg-red-500/80 text-white 
+                           hover:bg-red-500/90 transition-colors opacity-0 group-hover:opacity-100
+                           disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                  title="Delete message"
+                >
+                  {deletingMessageId === message._id ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4" />
+                  )}
+                </button>
+              )}
+
               {/* Message text */}
               <div className="text-sm text-white/90 whitespace-pre-wrap break-words">
                 {message.text}
