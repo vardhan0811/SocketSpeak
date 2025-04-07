@@ -35,10 +35,13 @@ const ChatContainer = () => {
   }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
 
   useEffect(() => {
-    if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
     }
-  }, [messages]);
+  }, [messages, selectedUser._id]);
 
   const handleDeleteMessage = async (messageId) => {
     try {
@@ -221,20 +224,34 @@ const ChatContainer = () => {
                   {message.images.map((image, index) => (
                     <div 
                       key={index} 
-                      className={`relative rounded-lg overflow-hidden ${
+                      className={`relative group/image rounded-lg overflow-hidden ${
                         message.images.length === 3 && index === 2 ? 'col-span-2' : ''
                       }`}
                     >
                       <img
                         src={image}
                         alt={`Message attachment ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="w-full h-full object-cover rounded-lg cursor-pointer"
                         style={{
                           maxHeight: message.images.length === 1 ? '300px' : '200px'
                         }}
                         loading="lazy"
                         onClick={() => handleImageClick(image)}
                       />
+                      {/* Download button overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadImage(image, index);
+                          }}
+                          className="p-2 rounded-full bg-purple-500/80 text-white hover:bg-purple-500/90 transition-colors"
+                          title="Download image"
+                        >
+                          <Download className="size-5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -261,6 +278,8 @@ const ChatContainer = () => {
             </div>
           </div>
         ))}
+        {/* Add scroll anchor div */}
+        <div ref={messageEndRef} />
       </div>
 
       {/* Image gallery modal */}
@@ -272,12 +291,24 @@ const ChatContainer = () => {
               alt="Selected image"
               className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
             />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white/90 hover:bg-black/70 transition-colors"
-            >
-              <X className="size-5" />
-            </button>
+            <div className="absolute top-2 right-2 flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownloadImage(selectedImage, 0);
+                }}
+                className="p-2 rounded-full bg-purple-500/80 text-white/90 hover:bg-purple-500/90 transition-colors"
+                title="Download image"
+              >
+                <Download className="size-5" />
+              </button>
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="p-2 rounded-full bg-black/50 text-white/90 hover:bg-black/70 transition-colors"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
           </div>
         </div>
       )}
