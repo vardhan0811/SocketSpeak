@@ -3,7 +3,13 @@ import { axiosInstance } from "../lib/axios.js";
 import { showSuccessToast, showErrorToast } from "../lib/toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+// For development: http://localhost:5001
+// For production: URL of the deployed app
+const BASE_URL = import.meta.env.MODE === "development" 
+  ? "http://localhost:5001" 
+  : window.location.origin;
+
+console.log("Socket connection URL:", BASE_URL);
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -125,20 +131,63 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
+    console.log('Connecting to socket at:', BASE_URL);
+    
     const socket = io(BASE_URL, {
       query: {
         userId: authUser._id,
       },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
-    socket.connect();
+    
+    socket.on('connect', () => {
+      console.log('Socket connected successfully');
+    });
+    
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
 
     set({ socket: socket });
 
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
     });
+    
+    // Listen for image download events
+    socket.on("imageDownload", (data) => {
+      console.log("Image download event received", data);
+      if (data.imageUrl) {
+        handleImageDownload(data.imageUrl, data.filename || 'image.jpg');
+      }
+    });
   },
+  
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },
 }));
+
+// Helper function to download an image
+function handleImageDownload(imageUrl, filename) {
+  fetch(imageUrl)
+    .then(response => response.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      showSuccessToast("Image download started");
+    })
+    .catch(error => {
+      console.error("Error downloading image:", error);
+      showErrorToast("Failed to download image");
+    });
+}
