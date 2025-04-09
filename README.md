@@ -43,10 +43,17 @@ NODE_ENV=development
 
 4. Start the development server:
 ```bash
+cd backend
+npm install
+npm run dev
+```
+5. Start the frontend server:
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:5001`
 
 ## Project Structure
 
@@ -66,13 +73,6 @@ socketspeak/
 └── package.json       # Root package.json
 ```
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
